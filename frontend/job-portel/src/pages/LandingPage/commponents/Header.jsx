@@ -1,6 +1,8 @@
 import React from 'react'
 import { useNavigate } from "react-router-dom";
 import { Briefcase } from "lucide-react"; // Fixed import
+import { motion } from 'framer-motion';
+
 
 const Header = () => {
   const isAuthenticated = true;
@@ -8,7 +10,12 @@ const Header = () => {
   const navigate = useNavigate();
 
   return (
-    <header className="bg-white">
+    <motion.header 
+     initial ={{opacity:0,y:-20}}
+     animate={{ opacity:1, y:0}}
+     transition={{duration:0.6}}
+     className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-b border-gray-200"
+    >
       <div className='container mx-auto px-4'>
         <div className='flex items-center justify-between h-16'>
           <div className='flex items-center space-x-3'>
@@ -73,7 +80,7 @@ const Header = () => {
           </div>
         </div>
       </div>
-    </header>
+    </motion.header>
   );
 };
 

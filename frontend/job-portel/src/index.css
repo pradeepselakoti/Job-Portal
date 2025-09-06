@@ -14,6 +14,7 @@
 
   body{
     background-color: #f7fafe;
-    overflow: hidden;
+    /* Remove or comment out the overflow: hidden line */
+    /* overflow: hidden; */
   }
 }

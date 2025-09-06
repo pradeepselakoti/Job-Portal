@@ -15,7 +15,7 @@ const Hero = () => {
         {icon: TrendingUp, label:'Jobs Posted', value:'150k+'}
     ];
 
-    return (
+    return ( 
         <section className='pt-24 pb-24 bg-white min-h-screen relative'>
             <div className='container mx-auto px-4'>
                 <div className='max-w-4xl mx-auto text-center'>
