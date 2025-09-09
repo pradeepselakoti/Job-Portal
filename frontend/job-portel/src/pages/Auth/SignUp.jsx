@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import {
   User, Mail, Lock, Upload, Eye, EyeOff, UserCheck, Building2, CheckCircle, AlertCircle, Loader
 } from "lucide-react";
+import { validateEmail, validatePassword, validateAvatar } from '../../utils/helper';
 
 const SignUp = () => {
 
@@ -39,18 +40,82 @@ const SignUp = () => {
   };
 
   const handleRoleChange = (role) =>{
-
+    setFormData((prev)=> ({...prev, role}));
+    if(formState.errors.role){
+      setFormState((prev)=>({
+        ...prev,
+        errors:{ ...prev.errors, role:" "},
+      }));
+    }
   };
 
   const handleAvatarChange = (e) =>{
+    const file = e.target.files[0];
+    if(file){
+      const error = validateAvatar(file);
+      if(error){
+        setFormState((prev)=> ({
+          ...prev,
+          errors: { ...prev.errors, avatar:error},
+        }));
+        return
+      }
+      setFormData((prev) => ({...prev, avatar:file}));
+
+      const reader = new FileReader();
+      reader.onload = (e) =>{
+        setFormState((prev)=>({
+          ...prev,
+          avatarPreview: e.target.result,
+          errors: {...prev.errors, avatar:""}
+        }))
+      };
+      reader.readAsDataURL(file);
+    }
 
   };
 
   const validateForm = () =>{
+    const errors = {
+      fullName : !formData.fullName ? "Enter full name": "",
+      email: validateEmail(formData.email),
+      password:validatePassword(formData.password),
+      role: !formData.role ? "Please select role" : "",
+      avatar:"",
+    };
+
+    Object.keys(errors).forEach((key)=>{
+      if(!errors[key]) delete errors[key];
+    });
+
+    setFormState((prev)=> ({...prev, errors}));
+    return Object.keys(errors).length === 0;
 
   };
 
   const handleSubmit = async(e)=>{
+    e.preventDefault();
+
+    if(!validateForm()) return;
+
+    setFormState((prev) =>({...prev, loading:true}));
+
+    try {
+      
+    } catch (error) {
+      console.log("error",error);
+
+      setFormState((prev) =>({
+        ...prev,
+        loading:false,
+        errors:{
+          submit:
+            error.response?.data?.message ||
+            "Registration failed. Please try again"
+        },
+      }));
+      
+    }
 
   };
 
@@ -187,6 +252,127 @@ const SignUp = () => {
                   </p>
                 )}
               </div>
+
+              <div>
+                <label className='block text-sm font-medium text-gray-700 mb-2'>
+                  Profile Picture (optional)
+                </label>
+                <div className='flex items-center space-x-4'>
+                  <div className='w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center overflow-hidden'>
+                    {formState.avatarPreview ? (
+                      <img 
+                         src={formState.avatarPreview}
+                         alt='Avatar preview'
+                         className='w-full h-full object-cover'
+                         />
+                    ):(
+                      <User className='w-8 h-8 text-gray-400' />
+
+                    )}
+                  </div>
+                  <div  className='flex-1'>
+                    <input 
+                      type='file'
+                      id='avatar'
+                      accept='.jpg,.jpeg,.png'
+                      onChange={handleAvatarChange}
+                      className='hidden'
+                      />
+                      <label
+                        htmlFor='avatar'
+                        className='cursor-pointer bg-gray-50 border-gray-300 rounded-lg px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 transition-colors flex items-center space-x-2'
+                        >
+                          <Upload className='w-4 h-4' />
+                          <span>Upload Photo</span>
+                        </label>
+                        <p className='text-xs text-gray-500 mt-1'>JPG, PNG up to 5MB</p>
+                  </div>
+                </div>
+                {formState.errors.avatar && (
+                  <p className='text-red-500 text-sm mt-1 flex items-center'>
+                    <AlertCircle className='w-4 h-4 mr-1' />
+                    {formState.errors.avatar}
+                  </p>
+                )}
+              </div>
+              <div>
+                <label className='block text-sm font-medium text-gray-700 mb-3'>
+                  I am a *
+                </label>
+                <div className='grid grid-cols-2 gap-4'>
+                  <button 
+                    type='button'
+                    onClick={()=> handleRoleChange("jobseeker")}
+                    className={`p-4 rounded-lg border-2 transition-all ${
+                      formData.role === "jobseeker"
+                       ? "border-blue-500 bg-blue-50 text-blue-700"
+                       : "border-gray-200 hover:border-gray-300"
+                    }`}
+                    >
+                      <UserCheck  className='w-8 h-8 mx-auto mb-2' />
+                      <div className='font-medium'>Job Seeker</div>
+                      <div className='text-xs text-gray-500'>
+                        Looking for opportunities
+                      </div>
+                    </button>
+                    <button 
+                         type='button'
+                         onClick={()=> handleRoleChange("employer")}
+                         className={`p-4 rounded-lg border-2 transition-all ${
+                          formData.role === "employer"
+                          ?"border-blue-500 bg-amber-50 text-blue-700"
+                          :"border-gray-200 hover:border-gray-300"
+                         }`}
+                         >
+                          <Building2 className='w-8 h-8 mx-auto mb-2' />
+                          <div className='font-medium'>Employer</div>
+                          <div className='text-xs text-gray-500'>Hiring talent</div>
+                         </button>
+                </div>
+                {formState.errors.role && (
+                  <p className='text-red-500 text-sm mt-2 flex items-center'>
+                    <AlertCircle className='w-4 h-4 mr-1' />
+                    {formState.errors.role}
+                  </p>
+                  
+                )}
+              </div>
+
+              {formState.errors.submit && (
+                <div className='bg-red-50 border border-red-200 rounded-lg p-3'>
+                  <p className='text-red-700 text-sm flex items-center'>
+                    <AlertCircle className='w-4 h-4 mr-2' />
+                    {formState.errors.submit}
+                  </p>
+                </div>
+              )}
+              
+              <button 
+                 type='submit'
+                 disabled={formState.loading}
+                 className='w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 rounded-lg font-semibold hover:from-blue-700 hover:to-purple-700 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2'
+                 >
+                  {formState.loading ? (
+                    <>
+                    <Loader className='w-5 h-5 animate-spin' />
+                    <span>Creating Account...</span>
+                    </>
+                  ):(
+                    <span>Create Account</span>
+                  )}
+                 </button>
+
+                 <div className='text-center'>
+                  <p className='text-gray-600'>
+                    Already have an account?{" "}
+                    <a 
+                      href='/login'
+                      className='text-blue-600 hover:text-blue-700 font-medium'
+                      >
+                        Sign in here
+                      </a>
+                  </p>
+                 </div>
             </form>
            </motion.div>
   </div>
