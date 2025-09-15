@@ -19,10 +19,11 @@ import SavedJobs from "./pages/JobSeeker/SavedJobs";
 import UserProfile from "./pages/JobSeeker/UserProfile";
 import ProtectedRoutes from "./routes/ProtectedRoutes";
 import LandingPage from "./pages/LandingPage/LandingPage";
+import { AuthProvider } from "./context/AuthContext";
 
 const App = () => {
   return (
-    <div>
+    <AuthProvider>
 
       <Router>
         <Routes>
@@ -55,7 +56,7 @@ const App = () => {
           },
         }}
       />
-    </div>
+    </AuthProvider>
   )
 }
 
