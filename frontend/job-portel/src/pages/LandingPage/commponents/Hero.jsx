@@ -2,10 +2,11 @@ import React from 'react';
 import { Search, ArrowRight, Users, Building2, TrendingUp, User } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { useAuth } from "../../../context/AuthContext"
+
 
 const Hero = () => {
-    const isAuthenticated = true;
-    const user = {fullName: "Pradeep",role:"employer"};
+  const {user, isAuthenticated} = useAuth();
 
     const navigate = useNavigate();
 
