@@ -39,8 +39,7 @@ const EmployerDashboard = () => {
     return () =>{};
   }, [])
   return (
-    <DashboardLayout>
-
+    <DashboardLayout activeMenu='employer-dashboard'>
     </DashboardLayout>
   )
 }
