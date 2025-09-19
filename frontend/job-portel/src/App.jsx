@@ -33,16 +33,18 @@ const App = () => {
           <Route path="/login" element={<Login />} />
 
           <Route path="/find-jobs" element={<JobSeekerDashboard />} />
-          <Route path="/jobs/:jobId" element={<JobDetails/>} />
-          <Route path="/saved-jobs" element={<SavedJobs/>} />
+          <Route path="/jobs/:jobId" element={<JobDetails />} />
+          <Route path="/saved-jobs" element={<SavedJobs />} />
           <Route path="/profile" element={<UserProfile />} />
 
-          <Route element={<ProtectedRoutes requiredRole="employer" />} />
-          <Route path="/employer-dashboard" element={<EmployerDashboard />}/>
-          <Route path="/post-job" element={<JobPostingForm />}/>
-          <Route path="/manage-jobs" element={<ManageJobs />}/>
-          <Route path="/applicants" element={<ApplicationViewer />}/>
-          <Route path="/company-profile" element={<EmployerProfilePage/>}/>
+          <Route element={<ProtectedRoutes requiredRole="employer" />}>
+            <Route path="/employer-dashboard" element={<EmployerDashboard />} />
+            <Route path="/post-job" element={<JobPostingForm />} />
+            <Route path="/manage-jobs" element={<ManageJobs />} />
+            <Route path="/edit-job/:jobId" element={<JobPostingForm />}/>
+            <Route path="/applicants" element={<ApplicationViewer />} />
+            <Route path="/company-profile" element={<EmployerProfilePage />} />
+          </Route>
 
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
