@@ -15,6 +15,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import moment from 'moment';
 import { getInitials } from '../../utils/helper';
 import StatusBadge from '../../components/layout/StatusBadge';
+import ApplicantProfilePreview from '../../components/Cards/ApplicantProfilePreview';
 
 const ApplicationViewer = () => {
 
@@ -24,8 +25,8 @@ const ApplicationViewer = () => {
   const navigate = useNavigate();
 
   const [applications, setApplications] = useState([]);
-  const [Loading, setLoading] = useState(true);
-  const [selectedApplicant, setSelectApplicant] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [selectedApplicant, setSelectedApplicant] = useState(null);
 
   const fetchApplications = async () => {
     try {
@@ -43,7 +44,7 @@ const ApplicationViewer = () => {
   useEffect(() => {
     if (jobId) fetchApplications();
     else navigate("/manage-jobs");
-  }, []);
+  }, [jobId, navigate]);
 
   //   Group applications by job
   const groupedApplications = useMemo(() => {
@@ -66,7 +67,7 @@ const ApplicationViewer = () => {
   };
   return (
     <DashboardLayout activeMenu='manage-jobs'>
-      {Loading && (
+      {loading && (
         <div className='min-h-screen bg-gray-50 flex items-center justify-center'>
           <div className='text-center'>
             <div className='animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto'></div>
@@ -207,7 +208,7 @@ const ApplicationViewer = () => {
                                          </button>
                                          <button
                                          onClick={() =>
-                                          setSelectApplicant(application)
+                                          setSelectedApplicant(application)
                                          }
                                          className="inline-flex items-center gap-2 px-3 py-2 bg-gray-100 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-200 transition-colors"
                                          >
@@ -224,8 +225,19 @@ const ApplicationViewer = () => {
               )}
             </div>
           )}
-
         </div>
+        {/* Profile Model */}
+        {selectedApplicant && (
+          <ApplicantProfilePreview
+            selectedApplicant={selectedApplicant}
+            setSelectApplicant={setSelectedApplicant}
+            handleDownloadResume={handleDownloadResume}
+            handleClose={() => {
+              setSelectedApplicant(null);
+              fetchApplications();
+            }}
+            />
+        )}
       </div>
 
     </DashboardLayout>

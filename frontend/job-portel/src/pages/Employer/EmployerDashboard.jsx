@@ -14,7 +14,6 @@ import axiosInstance from "../../utils/axiosInstance";
 import { API_PATHS } from "../../utils/apiPaths";
 import DashboardLayout from "../../components/layout/DashboardLayout";
 import LoadingSpinner from "../../components/LoadingSpinner";
-import { Children } from "react";
 import ApplicantDashboardCard from "../../components/Cards/ApplicantDashboardCard";
 
 const Card = ({title,headerAction,subtitle,className, children}) =>{
