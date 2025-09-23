@@ -7,6 +7,7 @@ import toast from "react-hot-toast";
 import uploadImage from '../../utils/uploadImage';
 
 import DashboardLayout from "../../components/layout/DashboardLayout";
+import EditProfileDetais from "./EditProfileDetais";
 
 
 const EmployerProfilePage = () => {
@@ -18,7 +19,7 @@ const EmployerProfilePage = () => {
     email: user?.email || "",
     avatar: user?.avatar || "",
     companyName: user?.companyName || "",
-    comapnyDescription: user?.comapnyDescription || "",
+    companyDescription: user?.companyDescription || "",
     companyLogo: user?.companyLogo || "",
   })
   const [editMode, setEditMode] = useState(false);
@@ -32,20 +33,76 @@ const EmployerProfilePage = () => {
       [field]: value,
     }));
   };
-  const handleImageUpload = async (File, type) => { };
+  const handleImageUpload = async (file, type) => {
+    setUploading((prev) => ({ ...prev, [type]: true }));
 
-  const handleImageChange = (e, type) => { };
+    try {
+      const imgUploadRes = await uploadImage(file);
+      const avatarUrl = imgUploadRes.imageUrl || "";
 
-  const handleSave = async () => { };
+      // update form data with new image URL
+      const field = type === "avatar" ? "avatar" : "companyLogo";
+      handleInputChange(field, avatarUrl);
+    } catch (error) {
+      console.error("Image upload failed:", error)
+    } finally {
+      setUploading((prev) => ({ ...prev, [type]: false }));
+    }
+  };
+
+
+  const handleImageChange = (e, type) => {
+    const file = e.target.files[0];
+    if (file) {
+      const previewUrl = URL.createObjectURL(file);
+      const field = type === "avatar" ? "avatar" : "companyLogo";
+      handleInputChange(field, previewUrl);
+
+      // upload Image
+      handleImageUpload(file, type);
+
+    }
+  };
+
+  const handleSave = async () => { 
+    setSaving(true);
+
+    try {
+      const response = await axiosInstance.put(
+        API_PATHS.AUTH.UPDATE_PROFILE,
+        formData
+      );
+
+      if(response.status === 200){
+        toast.success("Profile Details Updated Successfully!!");
+        // Update profile data and exit edit mode
+        setProfileData({...formData});
+        updateUser({...formData})
+        setEditMode(false);
+      }
+    } catch (error) {
+      console.error("Profile update failed:", error)
+    }finally{
+      setSaving(false);
+    }
+  };
+
   const handleCancel = () => {
     setFormData({ ...profileData });
     setEditMode(false);
   };
 
-  if(editMode){
-    return(
-      <EditProfileDetai;s
-    )
+  if (editMode) {
+    return (
+      <EditProfileDetais
+        formData={formData}
+        handleImageChange={handleImageChange}
+        handleInputChange={handleInputChange}
+        handleSave={handleSave}
+        saving={saving}
+        uploading={uploading}
+      />
+    );
   }
   return (
     <DashboardLayout activeMenu='company-profile'>
@@ -99,30 +156,31 @@ const EmployerProfilePage = () => {
 
                   {/* Company Logo and Name */}
                   <div className="flex items-center space-x-4">
-                    <img  
-                        src={profileData.companyLogo}
-                        alt="company Logo"
-                        className="w-20 h-20 rounded-lg object-cover border-4 border-blue-50"
-                      />
-                      <div>
-                        <h3 className="text-lg font-semibold text-gray-800">
-                          {profileData.companyLogo}
-                        </h3>
-                        <div className="flex items-center text-sm text-gray-600 mt-1">
-                          <Building2 className="w-4 h-4 mr-2" />
-                          <span>Company</span>
-                        </div>
+                    <img
+                      src={profileData.companyLogo}
+                      alt="company Logo"
+                      className="w-20 h-20 rounded-lg object-cover border-4 border-blue-50"
+                    />
+                    <div>
+                      <h3 className="text-lg font-semibold text-gray-800">
+                        {profileData.companyName}
+                      </h3>
+                      <div className="flex items-center text-sm text-gray-600 mt-1">
+                        <Building2 className="w-4 h-4 mr-2" />
+                        <span>Company</span>
                       </div>
+                    </div>
                   </div>
                 </div>
               </div>
               {/* company description */}
               <div className="mt-8">
                 <h2 className="text-lg font-semibold text-gray-800 border-b border-gray-200 pb-2 mb-2">
-                  <p className="text-sm text-gray-700 leading-relaxed bg-gray-50 p-6 rounded-lg">
-                    {profileData.comapnyDescription}
-                  </p>
+                  Company Description
                 </h2>
+                <p className="text-sm text-gray-700 leading-relaxed bg-gray-50 p-6 rounded-lg">
+                  {profileData.companyDescription}
+                </p>
               </div>
             </div>
           </div>
