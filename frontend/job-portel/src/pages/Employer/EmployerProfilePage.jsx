@@ -17,10 +17,10 @@ const EmployerProfilePage = () => {
   const [profileData, setProfileData] = useState({
     name: user?.name || "",
     email: user?.email || "",
-    avatar: user?.avatar || "",
+    avatar: user?.avatar || "/api/placeholder/150/150", // Default placeholder if no avatar
     companyName: user?.companyName || "",
     companyDescription: user?.companyDescription || "",
-    companyLogo: user?.companyLogo || "",
+    companyLogo: user?.companyLogo || "/api/placeholder/150/150", // Default placeholder if no logo
   })
   const [editMode, setEditMode] = useState(false);
   const [formData, setFormData] = useState({ ...profileData });
@@ -33,6 +33,7 @@ const EmployerProfilePage = () => {
       [field]: value,
     }));
   };
+  
   const handleImageUpload = async (file, type) => {
     setUploading((prev) => ({ ...prev, [type]: true }));
 
@@ -45,22 +46,33 @@ const EmployerProfilePage = () => {
       handleInputChange(field, avatarUrl);
     } catch (error) {
       console.error("Image upload failed:", error)
+      toast.error("Image upload failed. Please try again.");
     } finally {
       setUploading((prev) => ({ ...prev, [type]: false }));
     }
   };
 
-
   const handleImageChange = (e, type) => {
     const file = e.target.files[0];
     if (file) {
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        toast.error("Please select a valid image file");
+        return;
+      }
+      
+      // Validate file size (5MB max)
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error("File size must be less than 5MB");
+        return;
+      }
+
       const previewUrl = URL.createObjectURL(file);
       const field = type === "avatar" ? "avatar" : "companyLogo";
       handleInputChange(field, previewUrl);
 
       // upload Image
       handleImageUpload(file, type);
-
     }
   };
 
@@ -82,6 +94,7 @@ const EmployerProfilePage = () => {
       }
     } catch (error) {
       console.error("Profile update failed:", error)
+      toast.error("Profile update failed. Please try again.");
     }finally{
       setSaving(false);
     }
@@ -96,18 +109,20 @@ const EmployerProfilePage = () => {
     return (
       <EditProfileDetais
         formData={formData}
-        handleImageChange={handleImageChange}
+        handleImageUpload={handleImageChange}
         handleInputChange={handleInputChange}
         handleSave={handleSave}
+        handleCancel={handleCancel}
         saving={saving}
         uploading={uploading}
       />
     );
   }
+  
   return (
     <DashboardLayout activeMenu='company-profile'>
       <div className="min-h-screen bg-gray-50 py-8 px-4">
-        <div className="max-w-4xl">
+        <div className="max-w-4xl mx-auto"> {/* Fixed: Added mx-auto for center alignment */}
           <div className="bg-white rounded-xl shadow-lg overflow-hidden">
             {/* Header */}
             <div className="bg-gradient-to-r from-blue-500 to-blue-600 px-8 py-6 flex justify-between items-center">
@@ -116,39 +131,47 @@ const EmployerProfilePage = () => {
               </h1>
               <button
                 onClick={() => setEditMode(true)}
-                className="bg-white/10 hover:bg-opacity-30 text-white px-4 py-2 rounded-lg transition-colors flex items-center space-x-2"
+                className="bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-lg transition-colors flex items-center space-x-2"
               >
                 <Edit3 className="w-4 h-4" />
                 <span>Edit Profile</span>
               </button>
             </div>
+            
             {/* Profile-content */}
             <div className="p-8">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                {/* personal information */}
+                {/* Personal information */}
                 <div className="space-y-6">
                   <h2 className="text-lg font-semibold text-gray-800 border-b border-gray-200 pb-2">
                     Personal Information
                   </h2>
+                  
                   {/* Avatar and Name */}
                   <div className="flex items-center space-x-4">
-                    <img
-                      src={profileData.avatar}
-                      alt="Avatar"
-                      className="w-20 h-20 rounded-full object-cover border-4 border-blue-500"
-                    />
+                    <div className="relative">
+                      <img
+                        src={profileData.avatar}
+                        alt="Avatar"
+                        className="w-20 h-20 rounded-full object-cover border-4 border-blue-100"
+                        onError={(e) => {
+                          e.target.src = "/api/placeholder/150/150";
+                        }}
+                      />
+                    </div>
                     <div>
                       <h3 className="text-lg font-semibold text-gray-800">
-                        {profileData.name}
+                        {profileData.name || "Not provided"}
                       </h3>
-                      <div className="flex items-center text-sm text-gray-800">
+                      <div className="flex items-center text-sm text-gray-600 mt-1">
                         <Mail className="w-4 h-4 mr-2" />
-                        <span>{profileData.email}</span>
+                        <span>{profileData.email || "Not provided"}</span>
                       </div>
                     </div>
                   </div>
                 </div>
-                {/* company Information */}
+                
+                {/* Company Information */}
                 <div className="space-y-6">
                   <h2 className="text-lg font-semibold text-gray-800 border-b border-gray-200 pb-2">
                     Company Information
@@ -156,14 +179,19 @@ const EmployerProfilePage = () => {
 
                   {/* Company Logo and Name */}
                   <div className="flex items-center space-x-4">
-                    <img
-                      src={profileData.companyLogo}
-                      alt="company Logo"
-                      className="w-20 h-20 rounded-lg object-cover border-4 border-blue-50"
-                    />
+                    <div className="relative">
+                      <img
+                        src={profileData.companyLogo}
+                        alt="Company Logo"
+                        className="w-20 h-20 rounded-lg object-cover border-4 border-blue-50"
+                        onError={(e) => {
+                          e.target.src = "/api/placeholder/150/150";
+                        }}
+                      />
+                    </div>
                     <div>
                       <h3 className="text-lg font-semibold text-gray-800">
-                        {profileData.companyName}
+                        {profileData.companyName || "Not provided"}
                       </h3>
                       <div className="flex items-center text-sm text-gray-600 mt-1">
                         <Building2 className="w-4 h-4 mr-2" />
@@ -173,14 +201,17 @@ const EmployerProfilePage = () => {
                   </div>
                 </div>
               </div>
-              {/* company description */}
+              
+              {/* Company Description */}
               <div className="mt-8">
-                <h2 className="text-lg font-semibold text-gray-800 border-b border-gray-200 pb-2 mb-2">
+                <h2 className="text-lg font-semibold text-gray-800 border-b border-gray-200 pb-2 mb-4">
                   Company Description
                 </h2>
-                <p className="text-sm text-gray-700 leading-relaxed bg-gray-50 p-6 rounded-lg">
-                  {profileData.companyDescription}
-                </p>
+                <div className="bg-gray-50 p-6 rounded-lg">
+                  <p className="text-gray-700 leading-relaxed">
+                    {profileData.companyDescription || "No company description provided."}
+                  </p>
+                </div>
               </div>
             </div>
           </div>
