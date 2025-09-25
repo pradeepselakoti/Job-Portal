@@ -6,9 +6,10 @@ import { API_PATHS } from "../../utils/apiPaths";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { useAuth } from "../../context/AuthContext";
-import { FilterContent } from "./components/FilterContent";
+import FilterContent from './components/FilterContent';
 import SearchHeader from "./components/SearchHeader";
 import Navbar from "../../components/layout/Navbar";
+import JobCard from "../../components/Cards/JobCard";
 
 const JobSeekerDashboard = () => {
 
@@ -19,9 +20,9 @@ const JobSeekerDashboard = () => {
   const [showMobileFilters, setShowMobileFilters] = useState(false);
   const [error, setError] = useState(null);
 
-  const navigate = useNavigate(); // Fixed: Changed == to =
+  const navigate = useNavigate();
 
-  // Filter states - Fixed variable name
+  // Filter states
   const [filters, setFilters] = useState({
     keyword: "",
     location: "",
@@ -31,7 +32,7 @@ const JobSeekerDashboard = () => {
     maxSalary: "",
   });
 
-  // Sidebar Collapse states - Fixed variable name
+  // Sidebar Collapse states
   const [expandedSection, setExpandedSection] = useState({
     jobType: true,
     Salary: true,
@@ -75,7 +76,7 @@ const JobSeekerDashboard = () => {
     } finally {
       setLoading(false);
     }
-  }; // Added missing semicolon
+  };
 
   // Fetch jobs when filters change (debounced)
   useEffect(() => {
@@ -108,16 +109,16 @@ const JobSeekerDashboard = () => {
     }, 500);
 
     return () => clearTimeout(timeoutId);
-  }, [filters, user]); // Fixed: Changed filter to filters
+  }, [filters, user]);
 
   const handleFilterChange = (key, value) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
   };
 
   const toggleSection = (section) => {
-    setExpandedSection((prev) => ({ ...prev, [section]: !prev[section] })); // Fixed function name
+    setExpandedSection((prev) => ({ ...prev, [section]: !prev[section] }));
   };
-  
+
   const clearAllFilters = () => {
     setFilters({
       keyword: "",
@@ -153,7 +154,7 @@ const JobSeekerDashboard = () => {
             toggleSection={toggleSection}
             clearAllFilters={clearAllFilters}
             expandedSection={expandedSection}
-            filters={filters} // Fixed: Changed filter to filters
+            filters={filters}
             handleFilterChange={handleFilterChange}
           />
         </div>
@@ -163,11 +164,11 @@ const JobSeekerDashboard = () => {
 
   const toggleSaveJob = async (jobId, isSaved) => {
     try {
-      if(isSaved) {
+      if (isSaved) {
         await axiosInstance.delete(API_PATHS.JOBS.UNSAVE_JOB(jobId));
         toast.success("Job removed successfully!");
       } else {
-        await axiosInstance.post(API_PATHS.JOBS.SAVE_JOB(jobId)); // Fixed: Changed delete to post
+        await axiosInstance.post(API_PATHS.JOBS.SAVE_JOB(jobId));
         toast.success("Job saved successfully!");
       }
 
@@ -180,20 +181,20 @@ const JobSeekerDashboard = () => {
 
   const applyToJob = async (jobId) => {
     try {
-      await axiosInstance.post(API_PATHS.APPLICATIONS.APPLY_TO_JOB(jobId)); // Fixed: Changed delete to post
+      await axiosInstance.post(API_PATHS.APPLICATIONS.APPLY_TO_JOB(jobId));
       toast.success("Applied to job successfully!");
       fetchJobs();
-    } catch (error) { // Fixed: Moved catch block to correct position
+    } catch (error) {
       console.log("Error:", error);
       const errorMsg = error?.response?.data?.message;
       toast.error(errorMsg || "Something went wrong! Try again later");
     }
   };
 
-  if (jobs.length === 0 && loading) { // Fixed: Changed == to ===
+  if (jobs.length === 0 && loading) {
     return <LoadingSpinner />;
   }
-  
+
   return (
     <div className="bg-gradient-to-br from-blue-50 via-white to-purple-50">
       <Navbar />
@@ -205,12 +206,120 @@ const JobSeekerDashboard = () => {
             filters={filters}
             handleFilterChange={handleFilterChange}
           />
+          <div className="flex gap-6 lg:gap-8">
+            {/* Desktop sidebar filters */}
+            <div className="hidden lg:block w-80  flex-shrink-0">
+              <div className="bg-white/80 backdrop-blur-xl rounded-2xl shadow-lg border border-white/20 p-6 sticky top-20">
+                <h3 className="font-bold text-gray-900 text-xl mb-6">
+                  Filter Jobs
+                </h3>
+                <FilterContent
+                  toggleSection={toggleSection}
+                  clearAllFilters={clearAllFilters}
+                  expandedSection={expandedSection}
+                  filters={filters}
+                  handleFilterChange={handleFilterChange}
+                />
+              </div>
+            </div>
+
+            {/* Main Content */}
+            <div className="flex-1 min-w-0">
+              {/* Results Header */}
+              <div className="flex flex-col lg:flex-row lg:items-center justify-between mb-6 lg:mb-8 gap-4">
+                <div>
+                  <p className="text-gray-600 text-sm lg:text-base">
+                    Showing{" "}
+                    <span className="font-bold text-gray-900">
+                      {jobs.length}
+                    </span>{" "}
+                    jobs
+                  </p>
+                </div>
+
+                <div className="flex items-center justify-between lg:justify-end gap-4">
+                  {/* Mobile Filter Button */}
+                  <button
+                    onClick={() => setShowMobileFilters(true)}
+                    className="lg:hidden flex items-center gap-2 bg-white px-4 py-2 rounded-xl  border border-gray-200 font-medium text-gray-700 hover:bg-gray-50 transition-colors"                     >
+                    <Filter className="w-4 h-4" />
+                    Filters
+                  </button>
+
+                  <div className="flex items-center gap-3 lg:gap-4">
+                    <div className="flex items-center border border-gray-200 rounded-xl p-1 bg-white">
+                      <button
+                        onClick={() => setViewMode("grid")}
+                        className={`p-2 rounded-lg transition-colors ${viewMode === "grid"
+                            ? "bg-blue-600 text-white shadow-sm"
+                            : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+                          }`}
+                      >
+                        <Grid className="w-4 h-4" />
+
+                      </button>
+                      <button
+                        onClick={() => setViewMode("list")}
+                        className={`p-2 rounded-lg transition-colors ${viewMode === "list"
+                            ? "bg-blue-600 text-white shadow-sm"
+                            : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+                          }`}
+                      >
+                        <List className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Job Grid */}
+              {jobs.length === 0 ? (
+                <div className="text-center py-16 lg:py-20  bg-white/60 backdrop-blur-xl rounded-2xl border border-white/20">
+                  <div className="text-gray-400 mb-6">
+                    <Search className="w-16 h-16 mx-auto" />
+                      </div>
+                      <h3 className="text-xl lg:text-2xl font-bold text-gray-900 mb-3">
+                        No jobs found
+                      </h3>
+                    <p className="text-gray-600 mb-6">
+                      Try adjusting your search criteria or filter
+                    </p>
+                    <button
+                      onClick={clearAllFilters}
+                      className="bg-blue-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-blue-700 transition-colors"
+                    >
+                      Clear All Filters
+                    </button>
+                    </div> 
+              ) : (
+                <>
+                <div 
+                  className={
+                    viewMode === "grid"
+                    ? "grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-2 gap-4 lg:gap-6"
+                    : "space-y-4 lg:space-y-6"
+                  }
+                  >
+                    {jobs.map((job) => (
+                      <JobCard
+                         key={job._id}
+                         job={job}
+                         onClick={() => navigate(`/job/${job._id}`)}
+                         onToggleSave={() => toggleSaveJob(job._id, job.isSaved)}
+                         onApply={() => applyToJob(job._id)}
+                         />
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
         </div>
         {/* Mobile Filter Overlay */}
         <MobileFilterOverlay />
       </div>
     </div>
   );
-}; // Added missing semicolon
+};
 
 export default JobSeekerDashboard;

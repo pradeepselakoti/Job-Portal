@@ -6,7 +6,7 @@ import axiosInstance from "../../utils/axiosInstance";
 import { API_PATHS } from "../../utils/apiPaths";
 import toast from "react-hot-toast";
 
-import StatusBadge from "../layout/StatusBadge";
+import StatusBadge from "../StatusBadge";
 const statusOption = ["Applied", "In Review", "Rejected", "Accepted"];
 const ApplicantProfilePreview = ({
     selectedApplicant,

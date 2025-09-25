@@ -14,7 +14,7 @@ import { API_PATHS } from '../../utils/apiPaths';
 import { useLocation, useNavigate } from 'react-router-dom';
 import moment from 'moment';
 import { getInitials } from '../../utils/helper';
-import StatusBadge from '../../components/layout/StatusBadge';
+import StatusBadge from '../../components/StatusBadge';
 import ApplicantProfilePreview from '../../components/Cards/ApplicantProfilePreview';
 
 const ApplicationViewer = () => {
